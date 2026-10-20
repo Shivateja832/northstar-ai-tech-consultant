@@ -65,8 +65,9 @@ services:
       - key: KNOWLEDGE_BRAIN_URL
         value: https://northstar-knowledge-brain.onrender.com
 
-  - type: static
+  - type: web
     name: northstar-ai-tech-consultant
+    runtime: static
     buildCommand: node scripts/render_frontend_config.mjs
     staticPublishPath: services/frontend
     envVars:
