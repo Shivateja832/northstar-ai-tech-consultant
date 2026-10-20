@@ -146,6 +146,20 @@
         <footer>Northstar Consultant OS <span id="deployment-note">Local capstone prototype · Verify model and hosting configuration before production use</span></footer>
       </main>
     </div>
+    <dialog id="access-dialog" class="access-dialog" aria-labelledby="access-title">
+      <form id="access-form" class="access-card">
+        <span class="eyebrow">PROTECTED WORKSPACE</span>
+        <h2 id="access-title">Enter your access token</h2>
+        <p>Ask the project owner for the workspace token and share it only through a private channel. It is stored in this browser session.</p>
+        <label for="access-token">Workspace access token</label>
+        <input id="access-token" type="password" autocomplete="current-password" required>
+        <p id="access-status" class="small-status" aria-live="polite"></p>
+        <div class="button-row">
+          <button class="button primary" type="submit">Continue</button>
+          <button id="access-cancel" class="button secondary" type="button">Cancel</button>
+        </div>
+      </form>
+    </dialog>
     <script src="config.js"></script>
     <script src="app.js"></script>
   </body>

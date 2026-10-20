@@ -83,7 +83,9 @@ The three bundled meeting scenarios are **simulated text fixtures, not recording
 
 ## Current deployment and completion boundaries
 
-This is a **local application**, not a public internet deployment. Running at `localhost` is visible only on the machine running it. No recruiter-accessible public URL, cloud account, domain, TLS, persistent hosted database, or email credentials are provided in this project. A public production launch also needs hosting-specific configuration, HTTPS, authentication/authorization and rate limits for administrative/model-cost endpoints, secrets management, backups, monitoring, and a real end-to-end test on the target provider. Do not expose the current development servers directly to the public internet.
+The application is deployed as a **protected free-tier demo** at [https://northstar-ai-tech-consultant.onrender.com](https://northstar-ai-tech-consultant.onrender.com). The four hosted services have public HTTPS endpoints and health checks. The interactive workspace requires the `SERVICE_API_TOKEN` from the Render `northstar-shared` environment group; share it only with intended reviewers through a private channel. The hosted Knowledge Brain currently starts with seven bundled sample articles and reports whether an external model is configured; do not claim a full crawl or model-backed output unless those statuses confirm it.
+
+This is not a production customer-service deployment. Free hosting has ephemeral storage and can spin down, and the hosted Blueprint does not configure real mailbox access, outbound email, external text-model credentials, or transcription credentials. Public production use additionally needs persistent storage, identity-based authentication/authorization, rate limits for administrative/model-cost endpoints, backups, monitoring, and provider-specific privacy review.
 
 The source seed file (`services/knowledge_brain/data/knowledge.json`) is demo content and is not a verified snapshot of every Brilliant Directories support article. The live sitemap crawl must finish successfully before claiming the full source has been ingested. Recruiter demos should disclose whether the model is configured, whether the crawl finished, and that the bundled meetings are fixtures.
 
@@ -97,7 +99,7 @@ To deploy:
 
 1. Push this project to a GitHub repository you control. Do not include `.env`, API keys, or mailbox credentials.
 2. In Render, create a **Blueprint** from that repository and review the plan for every service before applying. This Blueprint selects free compute and has no persistent disks.
-3. Wait for all three web-service health checks to pass and confirm the static site is published, then visit `https://northstar-ai-tech-consultant.onrender.com`. Retrieve `SERVICE_API_TOKEN` from the shared environment group and enter it in the workspace prompt. Share that token with a recruiter only through a private channel; rotate it after the demo.
+3. Wait for all three web-service health checks to pass and confirm the static site is published, then visit `https://northstar-ai-tech-consultant.onrender.com`. Retrieve `SERVICE_API_TOKEN` from the shared environment group and enter it in the workspace access dialog. Share that token with a recruiter only through a private channel; rotate it after the demo.
 4. Test each workflow against the hosted URL. Expect free services to wake slowly and stored data to reset. Do not represent simulated meetings as recorded interviews or the seven sample articles as a complete help-center crawl.
 5. Optional model generation requires a provider endpoint and key configured in the Knowledge Brain environment; the local Ollama instance on your computer is not reachable by the hosted service. Real transcription requires a transcription provider key. Configure secrets only in Render, never in GitHub.
 
@@ -112,7 +114,7 @@ $env:SERVICE_API_TOKEN = Read-Host "Paste the Render SERVICE_API_TOKEN"
 .\.venv\Scripts\python.exe .\scripts\verify_application.py
 ```
 
-The blueprint is a deployment configuration, not evidence that the app is already online. Render's generated service URLs in `render.yaml` must remain aligned with the service names unless the URLs and the Knowledge Brain CORS origin are updated together.
+The Render Blueprint is configured for the deployed demo. Render's generated service URLs in `render.yaml` must remain aligned with the service names unless the URLs and the Knowledge Brain CORS origin are updated together.
 
 Live mailbox access and message delivery remain optional integrations. Configure IMAP and SMTP secrets only on a hosting plan that permits those connections, and test with a dedicated mailbox; keep `AUTO_SEND_ENABLED=false` unless the separate safety gates have been reviewed. To complete the real-interview requirement, obtain consented recordings/transcripts and process those actual transcripts through Scope Studio; the bundled scenarios are only fixtures. Never place credentials or private customer transcripts in this repository.
 

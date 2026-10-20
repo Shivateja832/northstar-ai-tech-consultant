@@ -9,8 +9,8 @@ const byId = (id) => document.getElementById(id);
 let accessTokenPrompt;
 
 if (window.APP_CONFIG?.hosted) {
-  byId('workspace-label').textContent = 'Protected workspace';
-  byId('workspace-description').textContent = 'Access is token-protected. Model and mailbox integrations depend on their configured credentials.';
+  byId('workspace-label').textContent = 'Protected demo workspace';
+  byId('workspace-description').textContent = 'Enter the access token supplied by the project owner. Model and mailbox integrations depend on their configured credentials.';
   byId('deployment-note').textContent = 'Protected hosted demo · Verify model and mailbox configuration before production use';
 }
 
@@ -36,14 +36,49 @@ async function requestJson(url, options = {}) {
 function requestAccessToken() {
   if (!accessTokenPrompt) {
     accessTokenPrompt = new Promise((resolve, reject) => {
-      const token = window.prompt('Enter the Northstar workspace access token:')?.trim();
-      if (!token) {
-        accessTokenPrompt = undefined;
-        reject(new Error('A workspace access token is required.'));
+      const dialog = byId('access-dialog');
+      const form = byId('access-form');
+      const input = byId('access-token');
+      const status = byId('access-status');
+      const cancel = byId('access-cancel');
+      if (!(dialog instanceof HTMLDialogElement) || !form || !input || !status || !cancel) {
+        reject(new Error('The workspace access form is unavailable. Reload the page and try again.'));
         return;
       }
-      sessionStorage.setItem('northstar_access_token', token);
-      resolve(token);
+
+      status.textContent = '';
+      input.value = '';
+      const cleanup = () => {
+        form.removeEventListener('submit', submit);
+        cancel.removeEventListener('click', dismiss);
+        dialog.removeEventListener('cancel', dismiss);
+      };
+      const dismiss = (event) => {
+        event.preventDefault();
+        cleanup();
+        dialog.close();
+        reject(new Error('A workspace access token is required.'));
+      };
+      const submit = (event) => {
+        event.preventDefault();
+        const token = input.value.trim();
+        if (!token) {
+          status.textContent = 'Enter the access token supplied by the project owner.';
+          return;
+        }
+        sessionStorage.setItem('northstar_access_token', token);
+        cleanup();
+        dialog.close();
+        resolve(token);
+      };
+      form.addEventListener('submit', submit);
+      cancel.addEventListener('click', dismiss);
+      dialog.addEventListener('cancel', dismiss);
+      dialog.showModal();
+      input.focus();
+    });
+    accessTokenPrompt = accessTokenPrompt.finally(() => {
+      accessTokenPrompt = undefined;
     });
   }
   return accessTokenPrompt;

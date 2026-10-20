@@ -112,6 +112,12 @@ form label:not(:first-child),.card > label { margin-top: 15px; }
 .approval-box input { margin-bottom: 10px; }
 footer { display: flex; justify-content: space-between; gap: 16px; padding: 16px 2px 0; color: #8892a2; font-size: 10px; }
 footer span { text-align: right; }
+.access-dialog { width: min(440px, calc(100vw - 32px)); border: 0; border-radius: 14px; padding: 0; color: var(--ink); box-shadow: 0 18px 60px #10182740; }
+.access-dialog::backdrop { background: #10182788; }
+.access-card { padding: 25px; }
+.access-card h2 { margin: 8px 0; font: 700 21px Manrope,sans-serif; }
+.access-card > p:not(.small-status) { color: var(--subtle); font-size: 12px; line-height: 1.55; margin: 0 0 18px; }
+.access-card .small-status { min-height: 0; padding: 0; }
 
 @media (max-width: 1000px) {
   .sidebar { width: 215px; }
