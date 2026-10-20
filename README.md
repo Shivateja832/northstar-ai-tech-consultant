@@ -87,17 +87,19 @@ This is a **local application**, not a public internet deployment. Running at `l
 
 The source seed file (`services/knowledge_brain/data/knowledge.json`) is demo content and is not a verified snapshot of every Brilliant Directories support article. The live sitemap crawl must finish successfully before claiming the full source has been ingested. Recruiter demos should disclose whether the model is configured, whether the crawl finished, and that the bundled meetings are fixtures.
 
-## Hosted recruiter demo on Render
+## Free hosted demo on Render
 
-`render.yaml` defines a four-service Render Blueprint: Knowledge Brain, Meeting Agent, Inbox Agent, and the static workspace. It configures HTTPS service URLs, health checks, persistent data disks, CORS, and a generated shared `SERVICE_API_TOKEN`. All non-health API routes require that token; the browser asks for it when the workspace is first used. API documentation is disabled when the token is set. The health routes remain public for platform health checks.
+`render.yaml` defines a four-service Render Blueprint: Knowledge Brain, Meeting Agent, Inbox Agent, and the static workspace. The web services use Render's free compute plan; the static site is free. The Blueprint configures HTTPS service URLs, health checks, CORS, and a generated shared `SERVICE_API_TOKEN`. All non-health API routes require that token; the browser asks for it when the workspace is first used. API documentation is disabled when the token is set. The health routes remain public for platform health checks.
+
+This is a **free-tier demo, not a production deployment**. Render free web services spin down after 15 minutes without inbound traffic and can take about a minute to wake. Their filesystems are ephemeral: SQLite data, learned feedback, and indexed crawl data can be lost on restart, redeploy, or spin-down. The free blueprint disables automatic crawling so an idle service does not attempt a long full crawl; the Knowledge Brain starts with the seven bundled sample articles. Free web services cannot send outbound SMTP traffic on ports 25, 465, or 587. Real mailbox access, email delivery, transcription, and hosted model generation are not configured by this free blueprint. Use a paid hosting plan with persistent storage and provider credentials for those capabilities.
 
 To deploy:
 
 1. Push this project to a GitHub repository you control. Do not include `.env`, API keys, or mailbox credentials.
-2. In Render, create a **Blueprint** from that repository and confirm the services and persistent-disk charges before applying it. The services use paid `starter` instances because the SQLite and learning data need persistent disks.
-3. Add a valid `OPENAI_API_KEY` to the Knowledge Brain service in Render and redeploy to enable model-backed generation. If left unset, the app intentionally remains in retrieval/rules mode.
-4. Wait for all four Render health checks to pass, then visit `https://northstar-ai-tech-consultant.onrender.com`. Retrieve `SERVICE_API_TOKEN` from the shared environment group and enter it in the workspace prompt. Share that token with a recruiter only through a private channel; rotate it after the demo.
-5. Confirm the Knowledge Brain crawl completes successfully, then run each workflow against the hosted URL. Do not represent simulated meetings as recorded interviews.
+2. In Render, create a **Blueprint** from that repository and review the plan for every service before applying. This Blueprint selects free compute and has no persistent disks.
+3. Wait for all three web-service health checks to pass and confirm the static site is published, then visit `https://northstar-ai-tech-consultant.onrender.com`. Retrieve `SERVICE_API_TOKEN` from the shared environment group and enter it in the workspace prompt. Share that token with a recruiter only through a private channel; rotate it after the demo.
+4. Test each workflow against the hosted URL. Expect free services to wake slowly and stored data to reset. Do not represent simulated meetings as recorded interviews or the seven sample articles as a complete help-center crawl.
+5. Optional model generation requires a provider endpoint and key configured in the Knowledge Brain environment; the local Ollama instance on your computer is not reachable by the hosted service. Real transcription requires a transcription provider key. Configure secrets only in Render, never in GitHub.
 
 For hosted end-to-end verification, set the service URLs and token in the PowerShell session (do not put the token in a source file), then run:
 
@@ -110,8 +112,8 @@ $env:SERVICE_API_TOKEN = Read-Host "Paste the Render SERVICE_API_TOKEN"
 .\.venv\Scripts\python.exe .\scripts\verify_application.py
 ```
 
-The blueprint is a deployment configuration, not evidence that the app is already online. This project currently has no connected GitHub repository or Render account, so the cloud deployment cannot be activated from this workspace. Render's generated service URLs in `render.yaml` must remain aligned with the service names unless the URLs and the Knowledge Brain CORS origin are updated together.
+The blueprint is a deployment configuration, not evidence that the app is already online. Render's generated service URLs in `render.yaml` must remain aligned with the service names unless the URLs and the Knowledge Brain CORS origin are updated together.
 
-Live mailbox access and message delivery remain optional integrations. Configure IMAP and SMTP secrets in the Inbox Agent's Render environment only after testing with a dedicated mailbox; keep `AUTO_SEND_ENABLED=false` unless the separate safety gates have been reviewed. To complete the real-interview requirement, obtain consented recordings/transcripts and process those actual transcripts through Scope Studio; the bundled scenarios are only fixtures. Never place credentials or private customer transcripts in this repository.
+Live mailbox access and message delivery remain optional integrations. Configure IMAP and SMTP secrets only on a hosting plan that permits those connections, and test with a dedicated mailbox; keep `AUTO_SEND_ENABLED=false` unless the separate safety gates have been reviewed. To complete the real-interview requirement, obtain consented recordings/transcripts and process those actual transcripts through Scope Studio; the bundled scenarios are only fixtures. Never place credentials or private customer transcripts in this repository.
 
-This hosted setup is suitable for a **protected recruiter demo**, not a production multi-user customer service. Before production use, add identity-based authentication, per-user authorization, rate limits, provider-specific privacy review, monitoring, backups, and operational alerting.
+This free setup can be used as a **protected recruiter demo with the limitations above**, not production multi-user customer service. Before production use, move to hosting with persistent storage, add identity-based authentication, per-user authorization, rate limits, provider-specific privacy review, monitoring, backups, and operational alerting.

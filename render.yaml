@@ -9,7 +9,7 @@ services:
   - type: web
     name: northstar-knowledge-brain
     runtime: python
-    plan: starter
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn services.knowledge_brain.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
@@ -17,33 +17,25 @@ services:
       - fromGroup: northstar-shared
       - key: PYTHON_VERSION
         value: 3.11.9
-      - key: OPENAI_API_KEY
-        sync: false
       - key: OPENAI_BASE_URL
         value: https://api.openai.com/v1
       - key: OPENAI_MODEL
         value: gpt-4o-mini
       - key: AI_MAX_OUTPUT_TOKENS
         value: "512"
-      - key: KNOWLEDGE_DB_PATH
-        value: /var/data/knowledge.db
       - key: AUTO_REFRESH
-        value: "true"
+        value: "false"
       - key: CRAWL_DELAY_SECONDS
         value: "0.75"
       - key: CRAWL_MAX_PAGES
         value: "0"
       - key: VISION_ANALYSIS_ENABLED
         value: "false"
-    disk:
-      name: northstar-knowledge-data
-      mountPath: /var/data
-      sizeGB: 1
 
   - type: web
     name: northstar-meeting-agent
     runtime: python
-    plan: starter
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn services.meeting_agent.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
@@ -53,26 +45,18 @@ services:
         value: 3.11.9
       - key: KNOWLEDGE_BRAIN_URL
         value: https://northstar-knowledge-brain.onrender.com
-      - key: MEETING_DB_PATH
-        value: /var/data/meetings.db
       - key: LOCAL_AI_FAST_MODE
-        value: "false"
-      - key: TRANSCRIPTION_API_KEY
-        sync: false
+        value: "true"
       - key: TRANSCRIPTION_BASE_URL
         value: https://api.openai.com/v1
       - key: TRANSCRIPTION_MODEL
         value: whisper-1
-    disk:
-      name: northstar-meeting-data
-      mountPath: /var/data
-      sizeGB: 1
 
   - type: web
     name: northstar-inbox-agent
     runtime: node
     rootDir: services/inbox_agent
-    plan: starter
+    plan: free
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /health
@@ -80,16 +64,9 @@ services:
       - fromGroup: northstar-shared
       - key: KNOWLEDGE_BRAIN_URL
         value: https://northstar-knowledge-brain.onrender.com
-      - key: DATA_DIR
-        value: /var/data
-    disk:
-      name: northstar-inbox-data
-      mountPath: /var/data
-      sizeGB: 1
 
-  - type: web
+  - type: static
     name: northstar-ai-tech-consultant
-    runtime: static
     buildCommand: node scripts/render_frontend_config.mjs
     staticPublishPath: services/frontend
     envVars:
