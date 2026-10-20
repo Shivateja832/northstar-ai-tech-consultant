@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101827">
+    <title>Northstar | AI Tech Consultant</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="http://localhost:8001">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <a class="brand" href="#" aria-label="Northstar home">
+          <span class="brand-mark">N</span>
+          <span><strong>northstar</strong><small>CONSULTANT OS</small></span>
+        </a>
+        <p class="nav-label">WORKSPACE</p>
+        <nav class="nav" aria-label="Workspace">
+          <button class="nav-item active" data-tab="knowledge"><span>01</span> Knowledge brain</button>
+          <button class="nav-item" data-tab="inbox"><span>02</span> Inbox copilot</button>
+          <button class="nav-item" data-tab="meeting"><span>03</span> Scope studio</button>
+        </nav>
+        <div class="sidebar-note">
+          <span class="live-dot"></span>
+          <strong id="workspace-label">Local workspace</strong>
+          <p id="workspace-description">The app fetches the public help center; external AI or SMTP is used only when configured.</p>
+        </div>
+        <small class="sidebar-version">CAPSTONE · BUILD 1.0</small>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div><span class="eyebrow">AI TECH CONSULTANT</span><h1 id="page-title">Knowledge brain</h1></div>
+          <div class="health-cluster" aria-live="polite">
+            <span id="app-status" class="status-pill"><i></i> Checking services</span>
+            <span id="model-status" class="status-pill muted"><i></i> Model status unknown</span>
+          </div>
+        </header>
+
+        <section class="panel active" id="knowledge-panel">
+          <div class="intro-row">
+            <div><span class="eyebrow">PRODUCT MEMORY</span><h2>Find a grounded answer.</h2><p>Ask against indexed help-center articles and inspect the source evidence.</p></div>
+            <div class="crawl-controls">
+              <input id="sitemap-url" type="url" value="https://support.brilliantdirectories.com/support/sitemap.xml" aria-label="Help center sitemap URL">
+              <button id="crawl-button" class="button secondary">Refresh help center</button>
+            </div>
+          </div>
+          <div class="crawl-status" id="crawl-status">Checking index status…</div>
+          <div class="card">
+            <form id="knowledge-form">
+              <label for="kb-question">What does the customer need to know?</label>
+              <div class="input-action"><textarea id="kb-question" rows="3" required placeholder="Ask a product or policy question…"></textarea><button type="submit" class="button primary">Search knowledge <span>→</span></button></div>
+            </form>
+            <div id="kb-output" class="result" aria-live="polite"></div>
+          </div>
+          <div class="grid two">
+            <div class="card">
+              <div class="card-heading"><div><span class="eyebrow">HUMAN IN THE LOOP</span><h3>Expert review queue</h3></div><button id="refresh-tasks" class="button text-button">Refresh</button></div>
+              <div id="expert-tasks" class="empty-state">Loading expert tasks…</div>
+            </div>
+            <div class="card">
+              <div class="card-heading"><div><span class="eyebrow">ADD INTERNAL KNOWLEDGE</span><h3>Upload a text document</h3></div></div>
+              <form id="document-form">
+                <label for="document-file">Markdown or plain text</label>
+                <input id="document-file" type="file" accept=".txt,.md,text/plain,text/markdown" required>
+                <button type="submit" class="button secondary">Index document</button>
+              </form>
+              <div id="document-status" class="small-status" aria-live="polite"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="inbox-panel">
+          <div class="intro-row">
+            <div><span class="eyebrow">CUSTOMER OPERATIONS</span><h2>Draft with a human in control.</h2><p>Review the evidence, edit the draft, then record the sent version to measure quality.</p></div>
+            <span class="review-badge">HUMAN REVIEW REQUIRED</span>
+          </div>
+          <div class="grid inbox-grid">
+            <div class="card">
+              <div class="card-heading"><div><span class="eyebrow">SAMPLE / TEST EMAILS</span><h3>Message queue</h3></div><span id="email-count" class="count-badge">Loading</span></div>
+              <button id="refresh-mailbox" class="button secondary">Load live mailbox</button>
+              <label for="sample-email">Choose a realistic test email</label>
+              <select id="sample-email"><option value="">Loading email examples…</option></select>
+              <label for="email-input">Customer message</label>
+              <textarea id="email-input" rows="9" placeholder="Paste a customer email…"></textarea>
+              <button id="draft-button" class="button primary full-width">Generate reply draft <span>→</span></button>
+              <div id="inbox-status" class="small-status" aria-live="polite"></div>
+            </div>
+            <div class="card">
+              <div class="card-heading"><div><span class="eyebrow">REPLY WORKBENCH</span><h3>Review and send</h3></div><span id="draft-mode" class="mode-badge">No draft yet</span></div>
+              <label for="draft-subject">Subject</label>
+              <input id="draft-subject" type="text" placeholder="Reply subject">
+              <label for="draft-reply">Reply (editable)</label>
+              <textarea id="draft-reply" rows="10" placeholder="Generate a draft to review it here…"></textarea>
+              <label for="recipient-email">Reply recipient</label>
+              <input id="recipient-email" type="email" placeholder="customer@example.com">
+              <div id="draft-sources" class="source-list"></div>
+              <div class="button-row">
+                <button id="copy-reply" class="button secondary" disabled>Copy reply</button>
+                <button id="mark-sent" class="button primary" disabled>Record human send</button>
+                <button id="send-reviewed" class="button primary" disabled>Send reviewed reply</button>
+                <button id="auto-send-reply" class="button danger" disabled>Auto-send (qualified only)</button>
+              </div>
+              <div class="feedback-row"><label for="quality-rating">Rate the final reply</label><select id="quality-rating"><option value="5">5 — approved</option><option value="4">4 — good</option><option value="3">3 — needs work</option><option value="2">2 — poor</option><option value="1">1 — unsafe</option></select></div>
+              <div id="learning-status" class="small-status" aria-live="polite"></div>
+            </div>
+          </div>
+          <div class="card learning-card"><div class="card-heading"><div><span class="eyebrow">QUALITY GATE</span><h3>Autonomy eligibility</h3></div><button id="refresh-learning" class="button text-button">Refresh</button></div><div id="learning-summary" class="empty-state">Loading feedback history…</div><p class="fine-print">Automatic delivery requires 20 consecutive unchanged human-sent replies of the same type, strong recent quality, safe intent, explicit configuration, and valid SMTP credentials. Sensitive categories remain human-reviewed.</p></div>
+        </section>
+
+        <section class="panel" id="meeting-panel">
+          <div class="intro-row">
+            <div><span class="eyebrow">DISCOVERY TO DELIVERY</span><h2>Turn conversation into a clear scope.</h2><p>Extract requirements, check existing product options, estimate ranges, and keep a human approval gate.</p></div>
+            <span class="review-badge">NOT SENT TO CLIENT</span>
+          </div>
+          <div class="grid meeting-grid">
+            <div class="card">
+              <div class="card-heading"><div><span class="eyebrow">MEETING INPUT</span><h3>Transcript</h3></div></div>
+              <label for="sample-meeting">Sample scenarios (simulated text, not recorded interviews)</label>
+              <select id="sample-meeting"><option value="">Choose an example or paste a transcript</option></select>
+              <label for="meeting-audio">Transcribe a consented recording (MP3, MP4, M4A, WAV, WEBM; max 25 MB)</label>
+              <input id="meeting-audio" type="file" accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/wav,audio/webm,video/mp4,.mp3,.mp4,.m4a,.wav,.webm">
+              <button id="transcribe-meeting" class="button secondary" type="button">Transcribe recording</button>
+              <label for="meeting-transcript">Transcript text</label>
+              <textarea id="meeting-transcript" rows="15" placeholder="Paste meeting transcript. Long transcripts are chunked for analysis."></textarea>
+              <label class="check-row"><input id="revise-scope" type="checkbox"> Update the last scope and compare revisions</label>
+              <button id="analyze-meeting" class="button primary full-width">Generate scope and estimate <span>→</span></button>
+              <div id="meeting-status" class="small-status" aria-live="polite"></div>
+            </div>
+            <div class="card">
+              <div class="card-heading"><div><span class="eyebrow">SENIOR REVIEW</span><h3>Scope &amp; proposal</h3></div><span id="scope-version" class="mode-badge">Awaiting transcript</span></div>
+              <div id="meeting-output" class="result empty-state">Analyze a transcript to generate requirements, product checks, estimate ranges, questions, and proposal assumptions.</div>
+              <div class="approval-box">
+                <label for="reviewer-name">Reviewer</label>
+                <input id="reviewer-name" type="text" placeholder="Your name">
+                <label for="approval-notes">Review notes</label>
+                <input id="approval-notes" type="text" placeholder="What did you verify?">
+                <div class="button-row"><button id="approve-scope" class="button primary" disabled>Approve internally</button><button id="reject-scope" class="button secondary" disabled>Request changes</button></div>
+                <p class="fine-print">Approval is recorded for audit; this demo does not send proposals to clients.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <footer>Northstar Consultant OS <span id="deployment-note">Local capstone prototype · Verify model and hosting configuration before production use</span></footer>
+      </main>
+    </div>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

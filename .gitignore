@@ -1,0 +1,12 @@
+.venv/
+node_modules/
+services/inbox_agent/node_modules/
+__pycache__/
+*.py[cod]
+.env
+services/knowledge_brain/data/knowledge.db
+services/knowledge_brain/data/knowledge.db-shm
+services/knowledge_brain/data/knowledge.db-wal
+services/meeting_agent/data/
+services/inbox_agent/data/learning.json
+services/inbox_agent/data/learning.json.tmp

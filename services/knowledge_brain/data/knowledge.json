@@ -1,0 +1,84 @@
+{
+  "articles": [
+    {
+      "id": "design-001",
+      "title": "Editing your website design",
+      "category": "Design",
+      "folder": "Branding and layout",
+      "content": "You can change the homepage hero section, colors, fonts, logo placement, and sections from the design editor. Changes are applied without custom coding when they use the built-in layout blocks. If a request requires custom code or a third-party widget, it may require a custom project and an estimate.",
+      "images": [
+        "Homepage layout showing header, hero area, feature grid, and CTA blocks",
+        "Color settings with font family, button style, and spacing controls"
+      ],
+      "tags": ["design", "website", "layout", "branding"]
+    },
+    {
+      "id": "billing-001",
+      "title": "Cancellations and renewals",
+      "category": "Billing",
+      "folder": "Payments and subscriptions",
+      "content": "Subscriptions renew automatically unless the account owner disables auto-renewal. Refunds are considered according to the current refund policy and service date. Teams should contact billing support with the account email and order number if they need a manual review.",
+      "images": [
+        "Billing page with auto-renew toggle and invoice history"
+      ],
+      "tags": ["billing", "refund", "cancellation", "subscription"]
+    },
+    {
+      "id": "search-001",
+      "title": "Search behavior and filters",
+      "category": "Website Features",
+      "folder": "Directory search",
+      "content": "Search can be improved using category filters, keyword matching, sorting, and pinned listings. The product offers configurable search settings that often solve client requests without custom development. Custom search ranking features usually require a separate project estimate.",
+      "images": [
+        "Search filters panel with categories, price ranges, location, and sort order"
+      ],
+      "tags": ["search", "filters", "directory", "ranking"]
+    },
+    {
+      "id": "member-001",
+      "title": "Member login and account access",
+      "category": "Members",
+      "folder": "User accounts",
+      "content": "Members log in with their registered email and password. Account access can be restored by resetting the password from the login screen or by an admin in the member management area. If you do not recognize an account, verify the contact email and the status of the subscription.",
+      "images": [
+        "Login screen with email field, password field, and forgot password link"
+      ],
+      "tags": ["login", "member", "account", "password"]
+    },
+    {
+      "id": "integrations-001",
+      "title": "Third-party integrations",
+      "category": "Integrations",
+      "folder": "Automation and services",
+      "content": "The platform supports common integrations for email, payment, and lead capture. Before approving a custom integration, confirm whether a supported connector or workflow already exists. If no existing option exists, the team evaluates an integration project scope and estimate.",
+      "images": [
+        "Connected apps list with email, CRM, and payment connectors"
+      ],
+      "tags": ["integration", "api", "crm", "automation"]
+    },
+    {
+      "id": "proposal-001",
+      "title": "When a request is custom code versus built-in settings",
+      "category": "Project planning",
+      "folder": "Scoping guidance",
+      "content": "Many client requests can be solved by changing settings, layout blocks, or standard templates. When a request needs data processing, custom workflow logic, or a new integration, it likely becomes a custom project. The project team should confirm whether a built-in feature covers the requirement before quoting custom work.",
+      "images": [
+        "Project scoping flow showing built-in feature check, then custom code decision"
+      ],
+      "tags": ["proposal", "scope", "customization", "estimate"]
+    },
+    {
+      "id": "support-001",
+      "title": "Escalating to a human support expert",
+      "category": "Support",
+      "folder": "Expert handoff",
+      "content": "If the answer is missing, ambiguous, or requires account-specific review, the chatbot should escalate the question to a human expert. The human can add the answer back into the knowledge base so future requests are answered automatically.",
+      "images": [
+        "Support queue showing review status, account context, and final answer"
+      ],
+      "tags": ["support", "escalation", "expert", "handoff"]
+    }
+  ],
+  "expert_tasks": [],
+  "expert_answers": []
+}
