@@ -372,7 +372,7 @@ byId('refresh-mailbox').addEventListener('click', async () => {
     });
     select.append(group);
     byId('email-count').textContent = `${state.emails.length} samples · ${result.count} live`;
-    showInfo(byId('inbox-status'), `Loaded ${result.count} message(s) from the configured IMAP inbox.`);
+    showInfo(byId('inbox-status'), `Loaded ${result.count} message(s) from the configured mailbox.`);
   } catch (error) {
     showError(byId('inbox-status'), error);
   } finally {
@@ -460,7 +460,7 @@ byId('send-reviewed').addEventListener('click', async () => {
   const button = byId('send-reviewed');
   button.disabled = true;
   try {
-    await requestJson(`${API.inbox}/send`, {
+    const result = await requestJson(`${API.inbox}/send`, {
       method: 'POST',
       body: JSON.stringify({
         to: recipient,
@@ -478,7 +478,7 @@ byId('send-reviewed').addEventListener('click', async () => {
         sent: true,
       }),
     });
-    showInfo(byId('learning-status'), `Email sent and feedback recorded. Draft unchanged: ${feedback.unchanged}.`);
+    showInfo(byId('learning-status'), `Email sent through ${result.provider || 'the configured provider'} and feedback recorded. Draft unchanged: ${feedback.unchanged}.`);
     await refreshLearning();
   } catch (error) {
     showError(byId('learning-status'), error);
@@ -504,7 +504,7 @@ byId('auto-send-reply').addEventListener('click', async () => {
         sources: state.draft.source?.sources || [],
       }),
     });
-    showInfo(byId('learning-status'), `Auto-send completed. Message ID: ${result.messageId || '(accepted by SMTP)'}`);
+    showInfo(byId('learning-status'), `Auto-send completed through ${result.provider || 'the configured provider'}. Message ID: ${result.messageId || '(accepted)'}`);
     await refreshLearning();
   } catch (error) {
     showError(byId('learning-status'), error);

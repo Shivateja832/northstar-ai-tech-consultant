@@ -25,7 +25,7 @@
         <div class="sidebar-note">
           <span class="live-dot"></span>
           <strong id="workspace-label">Local workspace</strong>
-          <p id="workspace-description">The app fetches the public help center; external AI or SMTP is used only when configured.</p>
+          <p id="workspace-description">The app fetches the public help center; external AI or email delivery is used only when configured.</p>
         </div>
         <small class="sidebar-version">CAPSTONE · BUILD 1.0</small>
       </aside>
@@ -80,7 +80,7 @@
           <div class="grid inbox-grid">
             <div class="card">
               <div class="card-heading"><div><span class="eyebrow">SAMPLE / TEST EMAILS</span><h3>Message queue</h3></div><span id="email-count" class="count-badge">Loading</span></div>
-              <button id="refresh-mailbox" class="button secondary">Load live mailbox</button>
+              <button id="refresh-mailbox" class="button secondary">Load connected mailbox</button>
               <label for="sample-email">Choose a realistic test email</label>
               <select id="sample-email"><option value="">Loading email examples…</option></select>
               <label for="email-input">Customer message</label>
@@ -107,7 +107,7 @@
               <div id="learning-status" class="small-status" aria-live="polite"></div>
             </div>
           </div>
-          <div class="card learning-card"><div class="card-heading"><div><span class="eyebrow">QUALITY GATE</span><h3>Autonomy eligibility</h3></div><button id="refresh-learning" class="button text-button">Refresh</button></div><div id="learning-summary" class="empty-state">Loading feedback history…</div><p class="fine-print">Automatic delivery requires 20 consecutive unchanged human-sent replies of the same type, strong recent quality, safe intent, explicit configuration, and valid SMTP credentials. Sensitive categories remain human-reviewed.</p></div>
+          <div class="card learning-card"><div class="card-heading"><div><span class="eyebrow">QUALITY GATE</span><h3>Autonomy eligibility</h3></div><button id="refresh-learning" class="button text-button">Refresh</button></div><div id="learning-summary" class="empty-state">Loading feedback history…</div><p class="fine-print">Automatic delivery requires 20 consecutive unchanged human-sent replies of the same type, strong recent quality, safe intent, explicit configuration, and valid email-provider credentials. Sensitive categories remain human-reviewed.</p></div>
         </section>
 
         <section class="panel" id="meeting-panel">

@@ -6,6 +6,7 @@ import nodemailer from 'nodemailer';
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 import { LearningStore, normalizedReply, qualification } from './learning.js';
+import { fetchGmailMessages, gmailConfigured, sendGmailMessage } from './gmail.js';
 
 const PORT = Number(process.env.PORT || 3001);
 const KNOWLEDGE_BASE_URL = (process.env.KNOWLEDGE_BRAIN_URL || 'http://127.0.0.1:8001').replace(/\/$/, '');
@@ -159,11 +160,14 @@ async function isKnowledgeModelConfigured(): Promise<boolean> {
 }
 
 async function fetchMailboxMessages(): Promise<MailboxEmail[]> {
+  if (gmailConfigured()) {
+    return await fetchGmailMessages();
+  }
   const host = process.env.IMAP_HOST;
   const user = process.env.IMAP_USER;
   const password = process.env.IMAP_PASSWORD;
   if (!host || !user || !password) {
-    throw new Error('IMAP is not configured. Set IMAP_HOST, IMAP_USER, and IMAP_PASSWORD in .env.');
+    throw new Error('Mailbox access is not configured. Set the Gmail OAuth variables or IMAP credentials in Render.');
   }
   const client = new ImapFlow({
     host,
@@ -211,6 +215,23 @@ function emailTransport() {
     secure: process.env.SMTP_SECURE === 'true',
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
   });
+}
+
+function smtpConfigured(): boolean {
+  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD);
+}
+
+async function sendEmail(to: string, subject: string, text: string): Promise<{ messageId: string; provider: string }> {
+  if (gmailConfigured()) {
+    return { messageId: await sendGmailMessage(to, subject, text), provider: 'gmail-api' };
+  }
+  const result = await emailTransport().sendMail({
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to,
+    subject,
+    text,
+  });
+  return { messageId: result.messageId, provider: 'smtp' };
 }
 
 function validEmail(value: string): boolean {
@@ -283,8 +304,11 @@ const server = createServer(async (req, res) => {
       aiModelConfigured: knowledge.modelConfigured,
       knowledgeBrainAvailable: knowledge.available,
       ...(knowledge.error ? { knowledgeBrainError: knowledge.error } : {}),
-      smtpConfigured: Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD),
-      mailboxConfigured: Boolean(process.env.IMAP_HOST && process.env.IMAP_USER && process.env.IMAP_PASSWORD),
+      smtpConfigured: smtpConfigured(),
+      gmailConfigured: gmailConfigured(),
+      mailboxConfigured: gmailConfigured() || Boolean(process.env.IMAP_HOST && process.env.IMAP_USER && process.env.IMAP_PASSWORD),
+      emailDeliveryConfigured: gmailConfigured() || smtpConfigured(),
+      emailDeliveryProvider: gmailConfigured() ? 'gmail-api' : smtpConfigured() ? 'smtp' : null,
       serviceTokenConfigured: Boolean(process.env.SERVICE_API_TOKEN),
     });
     return;
@@ -320,7 +344,8 @@ const server = createServer(async (req, res) => {
       qualification: Object.fromEntries(categories.map((category) => [category, qualification(store, category)])),
       recentFeedback: store.history.slice(-20).reverse(),
       autoSendEnabled: process.env.AUTO_SEND_ENABLED === 'true',
-      smtpConfigured: Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD),
+      smtpConfigured: smtpConfigured(),
+      gmailConfigured: gmailConfigured(),
     });
     return;
   }
@@ -439,8 +464,8 @@ const server = createServer(async (req, res) => {
         sendJson(res, 403, { error: 'Auto-send is disabled. Set AUTO_SEND_ENABLED=true only after reviewing the policy.' });
         return;
       }
-      if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
-        sendJson(res, 503, { error: 'SMTP is not configured; no email was sent.' });
+      if (!gmailConfigured() && !smtpConfigured()) {
+        sendJson(res, 503, { error: 'No email delivery provider is configured; no email was sent.' });
         return;
       }
       const subject = String(body.subject || 'Support follow-up');
@@ -448,12 +473,7 @@ const server = createServer(async (req, res) => {
         sendJson(res, 400, { error: 'A valid recipient, reply, and unchanged approved draft are required.' });
         return;
       }
-      const sentMessage = await emailTransport().sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to: email,
-        subject,
-        text: reply,
-      });
+      const sentMessage = await sendEmail(email, subject, reply);
       const store = readLearningStore();
       store.history.push({
         emailType,
@@ -463,7 +483,7 @@ const server = createServer(async (req, res) => {
         createdAt: new Date().toISOString(),
       });
       writeLearningStore(store);
-      sendJson(res, 200, { status: 'sent', messageId: sentMessage.messageId });
+      sendJson(res, 200, { status: 'sent', messageId: sentMessage.messageId, provider: sentMessage.provider });
     } catch (error) {
       sendJson(res, 502, { error: error instanceof Error ? error.message : 'Email transport failed' });
     }
@@ -480,13 +500,8 @@ const server = createServer(async (req, res) => {
         sendJson(res, 400, { error: 'A valid recipient, single-line subject, and reply body are required.' });
         return;
       }
-      const result = await emailTransport().sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to,
-        subject,
-        text: reply,
-      });
-      sendJson(res, 200, { status: 'sent', messageId: result.messageId });
+      const result = await sendEmail(to, subject, reply);
+      sendJson(res, 200, { status: 'sent', messageId: result.messageId, provider: result.provider });
     } catch (error) {
       sendJson(res, 503, { error: error instanceof Error ? error.message : 'Email send failed' });
     }

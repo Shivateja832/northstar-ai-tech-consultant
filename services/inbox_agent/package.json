@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "tsx src/server.ts",
-    "test": "tsx --test tests/learning.test.ts"
+    "test": "tsx --test tests/*.test.ts"
   },
   "devDependencies": {
     "@types/mailparser": "^3.4.4",
