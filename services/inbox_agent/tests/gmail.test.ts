@@ -25,6 +25,36 @@ test('Gmail API configuration requires the OAuth client and refresh token', () =
   assert.equal(gmailConfigured({ ...gmailEnvironment, GMAIL_REFRESH_TOKEN: '' }), false);
 });
 
+test('OAuth refresh errors distinguish a rejected or mismatched refresh token', async () => {
+  const originalFetch = globalThis.fetch;
+  const originalEnvironment = {
+    GMAIL_CLIENT_ID: process.env.GMAIL_CLIENT_ID,
+    GMAIL_CLIENT_SECRET: process.env.GMAIL_CLIENT_SECRET,
+    GMAIL_REFRESH_TOKEN: process.env.GMAIL_REFRESH_TOKEN,
+  };
+  Object.assign(process.env, {
+    ...gmailEnvironment,
+    GMAIL_REFRESH_TOKEN: 'refresh-token-invalid-grant-test',
+  });
+  globalThis.fetch = async () => Response.json(
+    { error: 'invalid_grant', error_description: 'Sensitive provider details are not surfaced.' },
+    { status: 400 },
+  );
+
+  try {
+    await assert.rejects(
+      fetchGmailMessages(),
+      /Google OAuth token refresh failed \(400: invalid_grant\).*revoked, expired, or issued for a different OAuth client/,
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [key, value] of Object.entries(originalEnvironment)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+});
+
 test('fetchGmailMessages refreshes OAuth and parses the newest inbox message', async () => {
   const originalFetch = globalThis.fetch;
   const originalEnvironment = {

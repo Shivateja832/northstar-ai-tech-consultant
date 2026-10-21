@@ -41,14 +41,21 @@ def configured() -> bool:
 
 
 def transcription_configured() -> bool:
-    return bool(os.getenv("TRANSCRIPTION_API_KEY"))
+    return bool(_transcription_api_key())
+
+
+def _transcription_api_key() -> str:
+    return (
+        (os.getenv("TRANSCRIPTION_API_KEY") or "").strip()
+        or (os.getenv("OPENAI_API_KEY") or "").strip()
+    )
 
 
 def transcribe_audio(filename: str, content_type: str, audio: bytes) -> str:
-    api_key = os.getenv("TRANSCRIPTION_API_KEY")
+    api_key = _transcription_api_key()
     if not api_key:
         raise AIProviderError(
-            "Audio transcription is not configured. Add a valid TRANSCRIPTION_API_KEY to the local .env."
+            "Audio transcription is not configured. Add TRANSCRIPTION_API_KEY or OPENAI_API_KEY to the service environment."
         )
     base_url = os.getenv("TRANSCRIPTION_BASE_URL", "https://api.openai.com/v1").rstrip("/")
     boundary = f"----Northstar{uuid.uuid4().hex}"
@@ -94,12 +101,37 @@ def transcribe_audio(filename: str, content_type: str, audio: bytes) -> str:
             raise AIProviderError("Transcription provider returned no transcript text.")
         return transcript.strip()
     except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")
+        detail = _provider_error_detail(exc)
         raise AIProviderError(
             f"Audio transcription provider returned HTTP {exc.code}: {detail}"
         ) from exc
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         raise AIProviderError(f"Audio transcription request failed: {exc}") from exc
+
+
+def _provider_error_detail(exc: urllib.error.HTTPError) -> str:
+    try:
+        payload = json.loads(exc.read().decode("utf-8", errors="replace"))
+    except json.JSONDecodeError:
+        return "The provider did not return a structured error."
+    error = payload.get("error") if isinstance(payload, dict) else None
+    if not isinstance(error, dict):
+        return "The provider did not return a structured error."
+    identifiers = [
+        value
+        for value in (error.get("code"), error.get("type"))
+        if isinstance(value, str) and value
+    ]
+    if exc.code == 429 and any(
+        value in {"insufficient_quota", "billing_hard_limit_reached"}
+        for value in identifiers
+    ):
+        return "API quota or billing limit reached; check the provider account's billing and usage limits."
+    if exc.code == 429:
+        return "API rate limit reached; reduce request rate or retry after the limit resets."
+    if identifiers:
+        return f"Provider error code: {', '.join(identifiers)}."
+    return "The provider rejected the request."
 
 
 def generate_json(system_prompt: str, user_prompt: str, images: list[str] | None = None) -> dict[str, Any]:
@@ -139,5 +171,8 @@ def generate_json(system_prompt: str, user_prompt: str, images: list[str] | None
         if not isinstance(parsed, dict):
             raise AIProviderError("The configured AI provider returned JSON that was not an object.")
         return parsed
+    except urllib.error.HTTPError as exc:
+        detail = _provider_error_detail(exc)
+        raise AIProviderError(f"AI provider returned HTTP {exc.code}: {detail}") from exc
     except (urllib.error.URLError, TimeoutError, KeyError, IndexError, json.JSONDecodeError) as exc:
         raise AIProviderError(f"AI provider request failed: {exc}") from exc

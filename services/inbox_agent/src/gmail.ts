@@ -61,7 +61,24 @@ async function accessToken(): Promise<string> {
     }),
   });
   if (!response.ok) {
-    throw new Error(`Google OAuth token refresh failed (${response.status}); verify the Gmail OAuth credentials in Render.`);
+    let errorCode = '';
+    try {
+      const errorBody = await response.json() as { error?: unknown };
+      if (typeof errorBody.error === 'string' && /^[A-Za-z0-9_.-]{1,80}$/.test(errorBody.error)) {
+        errorCode = errorBody.error;
+      }
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+      errorCode = '';
+    }
+    const reason = errorCode === 'invalid_grant'
+      ? 'the refresh token may be revoked, expired, or issued for a different OAuth client'
+      : errorCode === 'invalid_client'
+        ? 'the OAuth client ID and secret do not match'
+        : 'verify the Gmail OAuth credentials and consented scopes';
+    throw new Error(
+      `Google OAuth token refresh failed (${response.status}${errorCode ? `: ${errorCode}` : ''}); ${reason}.`,
+    );
   }
 
   const result = await response.json() as GoogleTokenResponse;
