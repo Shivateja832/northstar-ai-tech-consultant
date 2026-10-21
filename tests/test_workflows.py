@@ -97,6 +97,46 @@ class KnowledgeWorkflowTests(unittest.TestCase):
         self.assertEqual(article["category"], "Knowledge Base")
         self.assertEqual(article["folder"], "")
 
+    def test_image_provider_quota_error_does_not_abort_text_crawl(self) -> None:
+        locations = [
+            ("https://support.brilliantdirectories.com/article/one", None),
+            ("https://support.brilliantdirectories.com/article/two", None),
+        ]
+
+        def article_for(url: str, _raw: bytes, _content_type: str) -> dict[str, object]:
+            return {
+                "id": url.rsplit("/", 1)[-1],
+                "url": url,
+                "title": "Help article",
+                "category": "Product",
+                "folder": "",
+                "content": "Useful support article text.",
+                "images": [{"url": f"{url}.png", "alt": "Settings screen"}],
+                "tags": [],
+            }
+
+        self.assertTrue(crawler._worker_lock.acquire(blocking=False))
+        with patch.object(crawler, "_sitemap_urls", return_value=locations), patch.object(
+            crawler, "_fetch", return_value=(b"<html/>", "text/html")
+        ), patch.object(crawler, "_extract", side_effect=article_for), patch.object(
+            crawler,
+            "_analyze_images",
+            side_effect=knowledge.ai_provider.AIProviderError(
+                "AI provider returned HTTP 429: API quota or billing limit reached."
+            ),
+        ) as analyze_images, patch.object(crawler.time, "sleep"):
+            crawler._run(crawler.DEFAULT_SITEMAP, 0.25)
+
+        result = crawler.status()
+        self.assertEqual(result["status"], "completed_with_warnings")
+        self.assertEqual(result["processed"], 2)
+        self.assertIn("quota or billing limit", result["error"])
+        analyze_images.assert_called_once()
+        articles = {article["id"]: article for article in storage.all_articles()}
+        for article_id in ("one", "two"):
+            self.assertIn("Useful support article text.", articles[article_id]["content"])
+            self.assertEqual(articles[article_id]["images"][0]["analysis_status"], "unavailable")
+
 
 class MeetingWorkflowTests(unittest.TestCase):
     def test_product_lookup_uses_retrieval_without_extra_model_generation(self) -> None:

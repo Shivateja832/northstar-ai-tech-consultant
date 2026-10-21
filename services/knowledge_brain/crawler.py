@@ -215,6 +215,13 @@ def _analyze_images(article: dict[str, Any]) -> None:
             image["visible_text"] = str(analysis.get("visible_text", ""))[:2000]
 
 
+def _mark_image_analysis_unavailable(article: dict[str, Any], error: str) -> None:
+    for image in article.get("images", []):
+        if isinstance(image, dict) and image.get("url"):
+            image["analysis_status"] = "unavailable"
+            image["analysis_error"] = error[:500]
+
+
 def status() -> dict[str, Any]:
     storage.initialize()
     with storage.connect() as db:
@@ -255,6 +262,7 @@ def start(sitemap_url: str = DEFAULT_SITEMAP, delay_seconds: float | None = None
 
 def _run(sitemap_url: str, delay_seconds: float) -> None:
     run_id: int | None = None
+    vision_error: str | None = None
     try:
         locations = _sitemap_urls(sitemap_url)
         if not locations:
@@ -302,7 +310,14 @@ def _run(sitemap_url: str, delay_seconds: float) -> None:
                 raw, content_type = _fetch(page_url, allowed_host=urllib.parse.urlparse(sitemap_url).hostname)
                 article = _extract(page_url, raw, content_type)
                 if article:
-                    _analyze_images(article)
+                    if vision_error:
+                        _mark_image_analysis_unavailable(article, vision_error)
+                    else:
+                        try:
+                            _analyze_images(article)
+                        except ai_provider.AIProviderError as exc:
+                            vision_error = str(exc)
+                            _mark_image_analysis_unavailable(article, vision_error)
                 with storage.connect() as db:
                     if article:
                         storage.store_article(db, article, source="sitemap", lastmod=lastmod)
@@ -327,9 +342,14 @@ def _run(sitemap_url: str, delay_seconds: float) -> None:
             for article_id in removed:
                 db.execute("UPDATE articles SET active=0 WHERE id=?", (article_id,))
                 db.execute("DELETE FROM article_search WHERE article_id=?", (article_id,))
+            completion_status = "completed_with_warnings" if vision_error else "completed"
             db.execute(
-                "UPDATE crawl_runs SET status='completed', error=NULL, finished_at=CURRENT_TIMESTAMP WHERE id=?",
-                (run_id,),
+                "UPDATE crawl_runs SET status=?, error=?, finished_at=CURRENT_TIMESTAMP WHERE id=?",
+                (
+                    completion_status,
+                    f"Some image analysis was unavailable: {vision_error}" if vision_error else None,
+                    run_id,
+                ),
             )
     except Exception as exc:
         if run_id is not None:
