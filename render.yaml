@@ -30,7 +30,7 @@ services:
       - key: CRAWL_MAX_PAGES
         value: "0"
       - key: VISION_ANALYSIS_ENABLED
-        value: "false"
+        value: "true"
 
   - type: web
     name: northstar-meeting-agent
